@@ -1,52 +1,19 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button, ScrollView, TextInput, Alert} from 'react-native';
-import Constants from 'expo-constants';
-import { useState, useEffect } from 'react';
-import TouchComp from './TouchComp';
+import { Text, View } from 'react-native';
+import styles from './style/style';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import Gameboard from './components/Gameboard';
 
 
 export default function App() {
-const [name,setName] = useState("");
-
-useEffect(()=>{
-  console.log(name)
-},[])
-
-const _alert = () =>{
-  Alert.alert("Hello " + name);
-}
-
-//console.log(data);
-
   return (
-  <View style={styles.container}>
-    <Text style={[,{fontSize: 18,margin:10}]}>What is your name?</Text>
-      <TextInput 
-        style={[styles.text_input,{backgroundColor:"silver"}]} 
-        placeholder='Enter your name'
-        onChangeText={name=>setName(name)}
-        value={name} 
-        keyboardType='default'
-        />
-        <Button
-          onPress={_alert}
-          title="Say Hello"
-        />
+    <View style={styles.container}>
+      <Header />
+      <Gameboard />
+      <Footer />
+      <StatusBar style="auto" />
     </View>
-  );  
+  );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: Constants.statusBarHeight,
-    //alignItems: 'center',
-
-  },
-  text_input: {
-    color: 'black',
-    margin: 10,
-    padding: 10,
-    borderRadius: 5,
-  }
-});
