@@ -12,7 +12,7 @@ const WINNING_POINTS = 23;
 
 export default function Gameboard() {
   const [nbrOfThrowsLeft, setNbrOfThrowsLeft] = useState(NBR_OF_THROWS);
-  const [nbrOfWins, setNbrOfWins] = useState(0);
+  const [Total, setTotal] = useState(0);
   const [action, setAction] = useState(0);
   const [status, setStatus] = useState('');
   const [reload, setReload] = useState(0);
@@ -23,7 +23,7 @@ export default function Gameboard() {
       let randomNumber = Math.floor(Math.random() * 6 + 1);
       if(!cubes[i].lock){
         cubes[i] = {name:'dice-' + randomNumber, color: "steelblue", lock: false, value: randomNumber};
-    }
+      }
     }
     setNbrOfThrowsLeft(nbrOfThrowsLeft-1);
     setAction(action+1);
@@ -32,8 +32,7 @@ export default function Gameboard() {
   const lock = (i) => {
     cubes[i].lock = true;
     cubes[i].color = "black";
-    setAction(action+1);      //no ide why but withou this is not refreshing MaterialComunityIcons //dirty patch
-    
+    setAction(action+1);      //no idea why but withou this is not refreshing MaterialComunityIcons //dirty patch
   }
 
 //-----------
@@ -69,15 +68,19 @@ const circlesVisual = [];
 const getCircles = () =>{
   for (let i = 0; i < NBR_OF_DICES; i++){
     circlesVisual.push(
-    <MaterialCommunityIcons
-      name={circles[i].name}
-      key={'circle'+i}
-      size={40}        
-      color={circles[i].color}
-    />
+     <View key={'couple '+i} style={[styles.gameboard,{margin: 5}]}>
+      <Text key={'multi '+i}>{circles[i].multiplicator}</Text>
+      <MaterialCommunityIcons
+        name={circles[i].name}
+        key={'circle'+i}
+        size={40}        
+        color={circles[i].color}
+      />
+      </View> 
     )
   }
 }
+
 getCircles();
 //-----------
 useEffect(()=>{
@@ -87,16 +90,16 @@ useEffect(()=>{
 useEffect(() => {
   checkWinner();
   if(nbrOfThrowsLeft === NBR_OF_THROWS){
-    setStatus('Game has not started');
+    setStatus('Throw dices.');
   }
   if(nbrOfThrowsLeft < 0){
     setNbrOfThrowsLeft(NBR_OF_THROWS-1);
-    setNbrOfWins(0);
+    setTotal(0);
   }
 }, [nbrOfThrowsLeft]);
 
 function checkWinner() {
-  if(nbrOfWins > 0 && nbrOfThrowsLeft === 0) {
+  if(Total > 0 && nbrOfThrowsLeft === 0) {
     setStatus('You won, game over');
   }
   else if(nbrOfThrowsLeft === 0){
@@ -110,12 +113,12 @@ function checkWinner() {
     <View style={styles.gameboard}>
       <View style={styles.flex}>{cubesVisual}</View>
       <Text style={styles.gameinfo}>Throws left: {nbrOfThrowsLeft}</Text>
-      <Text style={styles.gameinfo}>Nbr of wins: {nbrOfWins}</Text>
       <Text style={styles.gameinfo}>{status}</Text>
       <Pressable style={styles.button}
         onPress={() => throwDices()}>
           <Text style={styles.buttonText}>Throw dices</Text>
         </Pressable>
+      <Text style={styles.gameinfo}>Total: {Total}</Text>
         <View style={styles.flex}>{circlesVisual}</View>
     </View>
   )
