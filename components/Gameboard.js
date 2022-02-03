@@ -18,7 +18,7 @@ export default function Gameboard() {
   const [reload, setReload] = useState(0);
 
 
-  function throwDices() {
+  function throwDices() {   //Showtime
     for (let i = 0; i < NBR_OF_DICES; i++){
       let randomNumber = Math.floor(Math.random() * 6 + 1);
       if(!cubes[i].lock){
@@ -27,6 +27,8 @@ export default function Gameboard() {
     }
     setNbrOfThrowsLeft(nbrOfThrowsLeft-1);
     setAction(action+1);
+
+
   }
 
   const lock = (i) => {
@@ -41,6 +43,28 @@ export default function Gameboard() {
     setAction(action+1);      //no idea why but withou this is not refreshing MaterialComunityIcons //dirty patch
   }
 
+  const circlesValue = () => {
+    let counter = [];
+    let i = 1;
+    for (; i <= 6; i++){
+      counter[i] = 0;
+    }
+    i = 0;
+    for (; i < 5; i++){
+      if(cubes[i].lock){
+        counter[cubes[i].value] = counter[cubes[i].value] + 1;
+      }
+    }
+    // needs condition!!! implementation depends on game rules
+    i = 1;
+    for (; i <= 6; i++){
+      circles[i].multiplicator = counter[i];  //write multiplication
+      if(counter[i]){                         //if counter is higher than zero:
+        circles[i].color = "black";           // black it
+      }
+    }
+  }
+  
 
 //-----------
   const cubesVisual = [];
@@ -65,7 +89,7 @@ console.log("reloaded " + reload);
 console.log("action " + action);
 
 function setCircles() {
-  for (let i = 0; i < NBR_OF_DICES; i++){
+  for (let i = 1; i <= 6; i++){
     circles[i] = {name:'numeric-' + i + '-circle', color: "steelblue", multiplicator: 0};
   }
 }
@@ -73,7 +97,8 @@ setCircles();
 //------------
 const circlesVisual = [];
 const getCircles = () =>{
-  for (let i = 0; i < NBR_OF_DICES; i++){
+  circlesValue();
+  for (let i = 1; i <= 6; i++){
     circlesVisual.push(
      <View key={'couple '+i} style={[styles.gameboard,{margin: 5}]}>
       <Text key={'multi '+i}>{circles[i].multiplicator}</Text>
