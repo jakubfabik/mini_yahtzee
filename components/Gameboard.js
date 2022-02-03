@@ -30,10 +30,17 @@ export default function Gameboard() {
   }
 
   const lock = (i) => {
-    cubes[i].lock = true;
-    cubes[i].color = "black";
+    if(cubes[i].lock){
+      cubes[i].lock = false;
+      cubes[i].color = "steelblue";
+    }
+    else{
+      cubes[i].lock = true;
+      cubes[i].color = "black";
+    }
     setAction(action+1);      //no idea why but withou this is not refreshing MaterialComunityIcons //dirty patch
   }
+
 
 //-----------
   const cubesVisual = [];
@@ -80,12 +87,8 @@ const getCircles = () =>{
     )
   }
 }
-
 getCircles();
 //-----------
-useEffect(()=>{
-  setReload(reload+1);
-},[action])
 
 useEffect(() => {
   checkWinner();
