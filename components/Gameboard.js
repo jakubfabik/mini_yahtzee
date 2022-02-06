@@ -4,10 +4,11 @@ import {Text, View, Pressable} from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 let cubes = [{},{},{},{},{}]; //important for constructor at getDices
-let circles = [{},{},{},{}];  //important for constructor at getCircles
+let circles = [{},{},{},{},{}];  //important for constructor at getCircles
 for (let i = 1; i <= 6; i++){
-  circles[i] = {name:'numeric-' + i + '-circle', color: "steelblue", multiplicator: 0, selected: false};
+  circles[i] = {name:'numeric-' + i + '-circle', color: "steelblue", multiplicator: 0, selected: false, blocked: false};
 }
+let locks = {circles: false, cubes: false};
 const NBR_OF_DICES = 5;
 const NBR_OF_THROWS = 3;
 const WINNING_POINTS = 23;
@@ -18,6 +19,22 @@ export default function Gameboard() {
   const [action, setAction] = useState(0);
   const [status, setStatus] = useState('');
 
+  function checkSelRow(){
+    let selected = 0
+    for (let i = 0; i < NBR_OF_DICES; i++){
+      if(cubes[i].lock){
+        selected = cubes[i].value;
+        break;
+      }
+    }
+    for (let i = 0; i < NBR_OF_DICES; i++){
+      if(cubes[i].lock){
+        if(cubes[i].value != selected){
+          console.log("PROBLEM!!!!");
+        }
+      }
+    }
+  }
 
   function throwDices() {   //Showtime
     for (let i = 0; i < NBR_OF_DICES; i++){
@@ -28,7 +45,9 @@ export default function Gameboard() {
     }
     setNbrOfThrowsLeft(nbrOfThrowsLeft-1);
     setAction(action+1);
-
+    if(nbrOfThrowsLeft === 0){
+      checkSelRow();
+    }
   }
 
   const lock = (i) => {
@@ -41,7 +60,7 @@ export default function Gameboard() {
       cubes[i].color = "black";
     }
     setAction(action+1);      //no idea why but withou this is not refreshing MaterialComunityIcons //dirty patch
-    console.log(cubes);
+    //console.log(cubes);
   }
 
 
@@ -79,7 +98,6 @@ const circlesValue = () => {
       counter[cubes[i].value] = counter[cubes[i].value] + 1;
     }
   }
-  // needs condition!!! implementation depends on game rules
   i = 1;
   for (; i <= 6; i++){
       if(circles[i].selected){
@@ -87,26 +105,62 @@ const circlesValue = () => {
       if(counter[i]){                         //if counter is higher than zero:
         circles[i].color = "black";           // black it
       }
+      else{ 
+        circles[i].color = "steelblue";  
+        circles[i].selected = false;
+      }
     }
     else{
       circles[i].multiplicator = 0;
       circles[i].color = "steelblue";
+      circles.selected = false;
     }
   }
 }
 
+function unlockDices(j){
+  for(let i = 0; i < NBR_OF_DICES; i++){
+    if(cubes[i].value === j){
+      cubes[i].lock = false;
+      cubes[i].color = "steelblue";
+    }
+  }
+}
+
+function roundCheck(j){   //this is connected with  oneRound variable
+  let i = 1;
+  for(;i <= 6; i++){
+    if(circles[i].selected){
+      if(i === j){
+        continue;
+      } 
+      else{
+        return false; // per one round can not be selected two collections
+      }
+    }
+  }
+  return true
+}
 
 function lockCircle(i){
-      if(!circles[i].selected){
-        circles[i].selected = true;
-        
+  let j = 0;
+  let k = 0;
+  if(!circles[i].blocked){
+    for(;j < NBR_OF_DICES; j++){
+        if(cubes[j].lock & cubes[j].value === i){
+          if(!circles[i].selected){
+            if(roundCheck(i)) circles[i].selected = true;
+            k = k + 1;
+          }
+        }
       }
-      else{
-        circles[i].selected = false;
-      }
-
-  //console.log(circles);
+    if(k === 0){
+      unlockDices(i);
+      circles[i].color = "steelblue";
+    }
+  }
   setAction(action+1);
+  //console.log(circles);
 }
 
 const circlesVisual = [];
