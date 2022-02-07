@@ -18,6 +18,7 @@ export default function Gameboard() {
   const [Total, setTotal] = useState(0);
   const [action, setAction] = useState(0);
   const [status, setStatus] = useState('');
+  const [round, setRound] = useState(1);
 
   function checkSelRow(){
     let selected = 0
@@ -44,7 +45,19 @@ export default function Gameboard() {
       checkSelRow();
       blockSelCirc();
       generateDices(true);
+      setRound(round + 1);
     }
+  }
+
+  function wasSelected(){
+    let locked = 0;
+    blockSelCirc();
+    for(let i = 1;i <= 6; i++){
+      if(circles[i].blocked){locked = locked + 1}
+    }
+    //console.log(circles, locked, round);
+    if(locked === round){return true}
+    else{return false}
   }
 
   const generateDices = (overrideLock) => {
@@ -201,7 +214,6 @@ useEffect(() => {
   }
   if(nbrOfThrowsLeft < 0){
     setNbrOfThrowsLeft(NBR_OF_THROWS-1);
-    setTotal(0);
   }
 }, [nbrOfThrowsLeft]);
 
@@ -210,7 +222,7 @@ function checkWinner() {
     setStatus('You won, game over');
   }
   else if(nbrOfThrowsLeft === 0){
-    setStatus('You did not win');
+    setStatus('Keep on throwing');
   }
   else{
     setStatus('Keep on throwing');
@@ -224,7 +236,7 @@ function checkWinner() {
       <Text style={styles.gameinfo}>Throws left: {nbrOfThrowsLeft}</Text>
       <Text style={styles.gameinfo}>{status}</Text>
       <Pressable style={styles.button}
-        onPress={() => throwDices()}>
+        onPress={() => ((nbrOfThrowsLeft === 0) && (!wasSelected()))?setStatus("Select your pints before next throw"):throwDices()}>
           <Text style={styles.buttonText}>Throw dices</Text>
       </Pressable>
       <Text style={styles.gameinfo}>Total: {Total}</Text>
