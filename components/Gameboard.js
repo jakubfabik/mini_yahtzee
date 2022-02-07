@@ -37,16 +37,28 @@ export default function Gameboard() {
   }
 
   function throwDices() {   //Showtime
-    for (let i = 0; i < NBR_OF_DICES; i++){
-      let randomNumber = Math.floor(Math.random() * 6 + 1);
-      if(!cubes[i].lock){
-        cubes[i] = {name:'dice-' + randomNumber, color: "steelblue", lock: false, value: randomNumber};
-      }
-    }
+    generateDices();
     setNbrOfThrowsLeft(nbrOfThrowsLeft-1);
     setAction(action+1);
     if(nbrOfThrowsLeft === 0){
       checkSelRow();
+      blockSelCirc();
+      generateDices(true);
+    }
+  }
+
+  const generateDices = (overrideLock) => {
+    for (let i = 0; i < NBR_OF_DICES; i++){
+      let randomNumber = Math.floor(Math.random() * 6 + 1);
+      if(!cubes[i].lock || overrideLock){
+        cubes[i] = {name:'dice-' + randomNumber, color: "steelblue", lock: false, value: randomNumber};
+      }
+    }
+  }
+
+  const blockSelCirc = () => {
+    for(let i = 1; i <= 6; i++){
+      if(circles[i].selected){circles[i].blocked = true}
     }
   }
 
@@ -94,26 +106,26 @@ const circlesValue = () => {
   }
   i = 0;
   for (; i < 5; i++){
-    if(cubes[i].lock){
-      counter[cubes[i].value] = counter[cubes[i].value] + 1;
-    }
+    counter[cubes[i].value] = counter[cubes[i].value] + 1;
   }
   i = 1;
   for (; i <= 6; i++){
-      if(circles[i].selected){
-      circles[i].multiplicator = counter[i];  //write multiplication
-      if(counter[i]){                         //if counter is higher than zero:
-        circles[i].color = "black";           // black it
+      if(!circles[i].blocked){
+        if(circles[i].selected){
+        circles[i].multiplicator = counter[i];  //write multiplication
+        if(counter[i]){                         //if counter is higher than zero:
+          circles[i].color = "black";           // black it
+        }
+        else{ 
+          circles[i].color = "steelblue";  
+          circles[i].selected = false;
+        }
       }
-      else{ 
-        circles[i].color = "steelblue";  
-        circles[i].selected = false;
+      else{
+        circles[i].multiplicator = 0;
+        circles[i].color = "steelblue";
+        circles.selected = false;
       }
-    }
-    else{
-      circles[i].multiplicator = 0;
-      circles[i].color = "steelblue";
-      circles.selected = false;
     }
   }
 }
@@ -131,6 +143,7 @@ function roundCheck(j){   //this is connected with  oneRound variable
   let i = 1;
   for(;i <= 6; i++){
     if(circles[i].selected){
+      if(circles[i].blocked){continue};
       if(i === j){
         continue;
       } 
@@ -144,19 +157,13 @@ function roundCheck(j){   //this is connected with  oneRound variable
 
 function lockCircle(i){
   let j = 0;
-  let k = 0;
-  if(!circles[i].blocked){
-    for(;j < NBR_OF_DICES; j++){
-        if(cubes[j].lock & cubes[j].value === i){
-          if(!circles[i].selected){
-            if(roundCheck(i)) circles[i].selected = true;
-            k = k + 1;
-          }
-        }
-      }
-    if(k === 0){
+  if(!circles[i].blocked & nbrOfThrowsLeft === 0){
+    if(!circles[i].selected){
+      if(roundCheck(i)) circles[i].selected = true;
+    }
+    else{
+      circles[i].selected = false;
       unlockDices(i);
-      circles[i].color = "steelblue";
     }
   }
   setAction(action+1);
@@ -169,7 +176,7 @@ const getCircles = () =>{
   for (let i = 1; i <= 6; i++){
     circlesVisual.push(
      <View key={'couple '+i} style={[styles.gameboard,{margin: 5}]}>
-      <Text key={'multi '+i}>{circles[i].multiplicator}</Text>
+      <Text key={'multi '+i}>{circles[i].multiplicator * i}</Text>
       <Pressable 
         key={'cube'+i}
         onPress={()=> lockCircle(i)}>
