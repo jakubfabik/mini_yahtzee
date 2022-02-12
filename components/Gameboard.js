@@ -4,9 +4,9 @@ import {Text, View, Pressable} from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 let cubes = [{},{},{},{},{}]; //important for constructor at getDices
-let circles = [{},{},{},{},{}];  //important for constructor at getCircles
+let circles = [{},{},{},{},{},{}];  //important for constructor at getCircles
 for (let i = 1; i <= 6; i++){
-  circles[i] = {name:'numeric-' + i + '-circle', color: "steelblue", multiplicator: 0, selected: false, blocked: false};
+  circles[i] = {name:'numeric-' + i + '-circle', color: "#0c95f7", multiplicator: 0, selected: false, blocked: false, counted: false};
 }
 let locks = {circles: false, cubes: false};
 const NBR_OF_DICES = 5;
@@ -49,13 +49,17 @@ export default function Gameboard() {
     }
   }
 
-  function wasSelected(){
+  function wasSelected(){   //Also counting the sum
     let locked = 0;
     blockSelCirc();
     for(let i = 1;i <= 6; i++){
-      if(circles[i].blocked){locked = locked + 1}
+      if(circles[i].blocked){locked = locked + 1} // end of round matching
+        if(circles[i].selected && circles[i].blocked && !circles[i].counted){   //in this loop counting sum
+          setTotal(Total + circles[i].multiplicator * i);
+          circles[i].counted = true;
+        }
     }
-    //console.log(circles, locked, round);
+    console.log(circles);
     if(locked === round){return true}
     else{return false}
   }
@@ -64,7 +68,7 @@ export default function Gameboard() {
     for (let i = 0; i < NBR_OF_DICES; i++){
       let randomNumber = Math.floor(Math.random() * 6 + 1);
       if(!cubes[i].lock || overrideLock){
-        cubes[i] = {name:'dice-' + randomNumber, color: "steelblue", lock: false, value: randomNumber};
+        cubes[i] = {name:'dice-' + randomNumber, color: "#0c95f7", lock: false, value: randomNumber};
       }
     }
   }
@@ -78,11 +82,11 @@ export default function Gameboard() {
   const lock = (i) => {
     if(cubes[i].lock){
       cubes[i].lock = false;
-      cubes[i].color = "steelblue";
+      cubes[i].color = "#0c95f7";
     }
     else{
       cubes[i].lock = true;
-      cubes[i].color = "black";
+      cubes[i].color = "#54000d";
     }
     setAction(action+1);      //no idea why but withou this is not refreshing MaterialComunityIcons //dirty patch
     //console.log(cubes);
@@ -127,16 +131,16 @@ const circlesValue = () => {
         if(circles[i].selected){
         circles[i].multiplicator = counter[i];  //write multiplication
         if(counter[i]){                         //if counter is higher than zero:
-          circles[i].color = "black";           // black it
+          circles[i].color = "#54000d";           // #54000d it
         }
         else{ 
-          circles[i].color = "steelblue";  
+          circles[i].color = "#0c95f7";  
           circles[i].selected = false;
         }
       }
       else{
         circles[i].multiplicator = 0;
-        circles[i].color = "steelblue";
+        circles[i].color = "#0c95f7";
         circles.selected = false;
       }
     }
@@ -147,7 +151,7 @@ function unlockDices(j){
   for(let i = 0; i < NBR_OF_DICES; i++){
     if(cubes[i].value === j){
       cubes[i].lock = false;
-      cubes[i].color = "steelblue";
+      cubes[i].color = "#0c95f7";
     }
   }
 }
@@ -236,7 +240,7 @@ function checkWinner() {
       <Text style={styles.gameinfo}>Throws left: {nbrOfThrowsLeft}</Text>
       <Text style={styles.gameinfo}>{status}</Text>
       <Pressable style={styles.button}
-        onPress={() => ((nbrOfThrowsLeft === 0) && (!wasSelected()))?setStatus("Select your pints before next throw"):throwDices()}>
+        onPress={() => ((nbrOfThrowsLeft === 0) && (!wasSelected()))?setStatus("Select your points before next throw"):throwDices()}>
           <Text style={styles.buttonText}>Throw dices</Text>
       </Pressable>
       <Text style={styles.gameinfo}>Total: {Total}</Text>

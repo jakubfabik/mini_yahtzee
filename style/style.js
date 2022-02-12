@@ -8,12 +8,12 @@ export default StyleSheet.create({
   header: {
     marginTop: 30,
     marginBottom: 15,
-    backgroundColor: 'skyblue',
+    backgroundColor: 'indianred',
     flexDirection: 'row',
   },
   footer: {
     marginTop: 20,
-    backgroundColor: 'skyblue',
+    backgroundColor: 'indianred',
     flexDirection: 'row'
   },
   title: {
@@ -55,14 +55,15 @@ export default StyleSheet.create({
     margin: 30,
     flexDirection: "row",
     padding: 10,
-    backgroundColor: "#73CED6",
+    backgroundColor: "#F08080",
     width: 150,
     borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center'
   },
   buttonText: {
-    color:"#2B2B52",
+    color:"#035087",
+    fontWeight: "bold",
     fontSize: 20
   }
 });
