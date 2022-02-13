@@ -6,7 +6,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 let cubes = [{},{},{},{},{}]; //important for constructor at getDices
 let circles = [{},{},{},{},{},{}];  //important for constructor at getCircles
 for (let i = 1; i <= 6; i++){
-  circles[i] = {name:'numeric-' + i + '-circle', color: "#0c95f7", multiplicator: 0, selected: false, blocked: false, counted: false};
+  circles[i] = {name:'numeric-' + i + '-circle', color: "#0c95f7", multiplicator: 0, selected: false, counted: false};
 }
 let locks = {circles: false, cubes: false};
 const NBR_OF_DICES = 5;
@@ -15,29 +15,14 @@ const NBR_OF_THROWS = 3;
 export default function Gameboard() {
   const [nbrOfThrowsLeft, setNbrOfThrowsLeft] = useState(NBR_OF_THROWS);
   const [Total, setTotal] = useState(0);
-  const [action, setAction] = useState(0);
+  const [action, setAction] = useState(0);  //I am usin this state var for counting actions and also to rerender bacic js parts
   const [status, setStatus] = useState('');
   const [round, setRound] = useState(1);
   const [bonusCount, setBonusCount] = useState(63);
   const [bonusAdded, setBonusAdded] = useState(false);
   const [buttonMes, setButtonMes] = useState("Throw dices");
+  const [selected, setSelected] = useState(false);
 
-  function checkSelRow(){
-    let selected = 0
-    for (let i = 0; i < NBR_OF_DICES; i++){
-      if(cubes[i].lock){
-        selected = cubes[i].value;
-        break;
-      }
-    }
-    for (let i = 0; i < NBR_OF_DICES; i++){
-      if(cubes[i].lock){
-        if(cubes[i].value != selected){
-          console.log("PROBLEM!!!!");
-        }
-      }
-    }
-  }
 
   function throwDices() {   //Showtime
     if(buttonMes === "New game"){NativeModules.DevSettings.reload();} //start new game
@@ -45,8 +30,6 @@ export default function Gameboard() {
     setNbrOfThrowsLeft(nbrOfThrowsLeft-1);
     setAction(action+1);
     if(nbrOfThrowsLeft === 0){
-      checkSelRow();
-      blockSelCirc();
       generateDices(true);
       setRound(round + 1);
     }
@@ -56,19 +39,12 @@ export default function Gameboard() {
     if(!bonusAdded){
       if(Total > 62){setTotal(Total + 17); setBonusAdded(true)} //for example bonus points are +17 and lock forn no more bonus points
     }
-    return bonusAdded;
   }
 
   function wasSelected(){   //Also counting the sum and counting bonus points
     let locked = 0;
-    blockSelCirc();
     for(let i = 1;i <= 6; i++){
-      if(circles[i].blocked){locked = locked + 1} // end of round matching
-        if(circles[i].selected && circles[i].blocked && !circles[i].counted){   //in this loop counting sum
-          setTotal(Total + circles[i].multiplicator * i);
-          setBonusCount(bonusCount - circles[i].multiplicator * i); // decrease bonus points
-          circles[i].counted = true;
-        }
+      if(circles[i].selected){locked = locked + 1} // end of round matching
     }
     if(locked === round){return true}
     else{return false}
@@ -83,12 +59,6 @@ export default function Gameboard() {
     }
   }
 
-  const blockSelCirc = () => {
-    for(let i = 1; i <= 6; i++){
-      if(circles[i].selected){circles[i].blocked = true}
-    }
-  }
-
   const lock = (i) => {
     if(cubes[i].lock){
       cubes[i].lock = false;
@@ -98,12 +68,9 @@ export default function Gameboard() {
       cubes[i].lock = true;
       cubes[i].color = "#54000d";
     }
-    setAction(action+1);      //no idea why but withou this is not refreshing MaterialComunityIcons //dirty patch
-    //console.log(cubes);
+    setAction(action+1);
   }
 
-
-//-----------
   const cubesVisual = [];
   const getDices = () =>{
     for (let i = 0; i < NBR_OF_DICES; i++){
@@ -123,7 +90,6 @@ export default function Gameboard() {
 }
 getDices();
 console.log("action " + action);
-//------------
 
 const circlesValue = () => {
   let counter = [];
@@ -137,49 +103,31 @@ const circlesValue = () => {
   }
   i = 1;
   for (; i <= 6; i++){
-      if(!circles[i].blocked){
         if(circles[i].selected){
-        circles[i].multiplicator = counter[i];  //write multiplication
-        if(counter[i]){                         //if counter is higher than zero:
-          circles[i].color = "#54000d";           // #54000d it
-        }
-        else{ 
-          circles[i].color = "#0c95f7";  
-          circles[i].selected = false;
-        }
+          if(!circles[i].counted)circles[i].multiplicator = counter[i];  //write multiplication
+          if(!circles[i].counted){
+            setTotal(Total + circles[i].multiplicator * i);
+            if(round != 6){setSelected("3");}
+            else{setSelected(0);}
+            circles[i].counted = true;
+            setBonusCount(bonusCount - circles[i].multiplicator * i); // decrease bonus points
+          }
+          if(counter[i]){                         //if counter is higher then zero:
+            circles[i].color = "#54000d";           // #54000d it
+          }
       }
-      else{
-        circles[i].multiplicator = 0;
-        circles[i].color = "#0c95f7";
-        circles.selected = false;
-      }
-    }
   }
+  checkBonus();
 }
 
-function unlockDices(j){
-  for(let i = 0; i < NBR_OF_DICES; i++){
-    if(cubes[i].value === j){
-      cubes[i].lock = false;
-      cubes[i].color = "#0c95f7";
-    }
-  }
-}
 
-function roundCheck(j){   //this is connected with  oneRound variable
-  let i = 1;
-  for(;i <= 6; i++){
-    if(circles[i].selected){
-      if(circles[i].blocked){continue};
-      if(i === j){
-        continue;
-      } 
-      else{
-        return false; // per one round can not be selected two collections
-      }
-    }
+function roundCheck(){   
+  let counter = 0;
+  for(let i = 0; i <= 6; i++){
+    if(circles[i].selected){counter = counter + 1}
   }
-  return true
+  if(counter === round-1){return true}
+  else{return false}
 }
 
 function endGame(){
@@ -194,18 +142,16 @@ function endGame(){
 }
 
 function lockCircle(i){
-  let j = 0;
-  if(!circles[i].blocked & nbrOfThrowsLeft === 0){
-    if(!circles[i].selected){
-      if(roundCheck(i)) circles[i].selected = true;
-    }
-    else{
-      circles[i].selected = false;
-      unlockDices(i);
+  for(let j= 0; j < NBR_OF_DICES; j++){
+    if(cubes[j].value === i){
+      if(roundCheck() && nbrOfThrowsLeft === 0){
+        circles[i].selected = true
+        endGame();
+        setAction(action+1);
+        return null
+      }
     }
   }
-  endGame();
-  setAction(action+1);
 }
 
 const circlesVisual = [];
@@ -238,9 +184,13 @@ useEffect(() => {
     setStatus('Throw dices.');
   }
   if(nbrOfThrowsLeft < 0){
-    setNbrOfThrowsLeft(NBR_OF_THROWS-1);
+    setNbrOfThrowsLeft(NBR_OF_THROWS - 1);
   }
 }, [nbrOfThrowsLeft]);
+
+useEffect(()=>{
+  setSelected(false);
+},[round])
 
 function checkWinner() {
   if(nbrOfThrowsLeft === 0){
@@ -251,18 +201,17 @@ function checkWinner() {
   }
 }
 
-
   return(
     <View style={styles.gameboard}>
       <View style={styles.flex}>{cubesVisual}</View>
-      <Text style={styles.gameinfo}>Throws left: {nbrOfThrowsLeft}</Text>
+      <Text style={styles.gameinfo}>Throws left: {(selected)?selected:nbrOfThrowsLeft}</Text>
       <Text style={styles.gameinfo}>{status}</Text>
       <Pressable style={styles.button}
         onPress={() => ((nbrOfThrowsLeft === 0) && (!wasSelected()))?setStatus("Select your points before next throw"):throwDices()}>
           <Text style={styles.buttonText}>{buttonMes}</Text>
       </Pressable>
       <Text style={styles.gameinfo}>Total: {Total}</Text>
-      <Text style={[styles.gameinfo,{fontSize: 15}]}>{checkBonus()?"You got the bonus!":"You are "+ bonusCount +" points away from bonus"}</Text>
+      <Text style={[styles.gameinfo,{fontSize: 15}]}>{bonusAdded?"You got the bonus!":"You are "+ bonusCount +" points away from bonus"}</Text>
         <View style={styles.flex}>{circlesVisual}</View>
     </View>
   )
