@@ -1,6 +1,6 @@
 import styles from '../style/style';
 import React, {useState, useEffect, useCallback} from 'react';
-import {Text, View, Pressable} from 'react-native';
+import {Text, View, Pressable, NativeModules} from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 let cubes = [{},{},{},{},{}]; //important for constructor at getDices
@@ -11,7 +11,6 @@ for (let i = 1; i <= 6; i++){
 let locks = {circles: false, cubes: false};
 const NBR_OF_DICES = 5;
 const NBR_OF_THROWS = 3;
-const WINNING_POINTS = 23;
 
 export default function Gameboard() {
   const [nbrOfThrowsLeft, setNbrOfThrowsLeft] = useState(NBR_OF_THROWS);
@@ -19,6 +18,9 @@ export default function Gameboard() {
   const [action, setAction] = useState(0);
   const [status, setStatus] = useState('');
   const [round, setRound] = useState(1);
+  const [bonusCount, setBonusCount] = useState(63);
+  const [bonusAdded, setBonusAdded] = useState(false);
+  const [buttonMes, setButtonMes] = useState("Throw dices");
 
   function checkSelRow(){
     let selected = 0
@@ -38,6 +40,7 @@ export default function Gameboard() {
   }
 
   function throwDices() {   //Showtime
+    if(buttonMes === "New game"){NativeModules.DevSettings.reload();} //start new game
     generateDices();
     setNbrOfThrowsLeft(nbrOfThrowsLeft-1);
     setAction(action+1);
@@ -49,17 +52,24 @@ export default function Gameboard() {
     }
   }
 
-  function wasSelected(){   //Also counting the sum
+  function checkBonus(){
+    if(!bonusAdded){
+      if(Total > 62){setTotal(Total + 17); setBonusAdded(true)} //for example bonus points are +17 and lock forn no more bonus points
+    }
+    return bonusAdded;
+  }
+
+  function wasSelected(){   //Also counting the sum and counting bonus points
     let locked = 0;
     blockSelCirc();
     for(let i = 1;i <= 6; i++){
       if(circles[i].blocked){locked = locked + 1} // end of round matching
         if(circles[i].selected && circles[i].blocked && !circles[i].counted){   //in this loop counting sum
           setTotal(Total + circles[i].multiplicator * i);
+          setBonusCount(bonusCount - circles[i].multiplicator * i); // decrease bonus points
           circles[i].counted = true;
         }
     }
-    console.log(circles);
     if(locked === round){return true}
     else{return false}
   }
@@ -172,6 +182,17 @@ function roundCheck(j){   //this is connected with  oneRound variable
   return true
 }
 
+function endGame(){
+  let allselected = 0;
+  for(let i = 1; i <= 6; i++){
+    if(circles[i].selected) {allselected = allselected + 1}
+  }
+  if(allselected === 6) {
+    setStatus('Game over. All points selected.');
+    setButtonMes('New game');  
+  }
+}
+
 function lockCircle(i){
   let j = 0;
   if(!circles[i].blocked & nbrOfThrowsLeft === 0){
@@ -183,8 +204,8 @@ function lockCircle(i){
       unlockDices(i);
     }
   }
+  endGame();
   setAction(action+1);
-  //console.log(circles);
 }
 
 const circlesVisual = [];
@@ -222,14 +243,11 @@ useEffect(() => {
 }, [nbrOfThrowsLeft]);
 
 function checkWinner() {
-  if(Total > 0 && nbrOfThrowsLeft === 0) {
-    setStatus('You won, game over');
-  }
-  else if(nbrOfThrowsLeft === 0){
-    setStatus('Keep on throwing');
+  if(nbrOfThrowsLeft === 0){
+    setStatus('Select your points');
   }
   else{
-    setStatus('Keep on throwing');
+    setStatus('Select and throw dices again');
   }
 }
 
@@ -241,9 +259,10 @@ function checkWinner() {
       <Text style={styles.gameinfo}>{status}</Text>
       <Pressable style={styles.button}
         onPress={() => ((nbrOfThrowsLeft === 0) && (!wasSelected()))?setStatus("Select your points before next throw"):throwDices()}>
-          <Text style={styles.buttonText}>Throw dices</Text>
+          <Text style={styles.buttonText}>{buttonMes}</Text>
       </Pressable>
       <Text style={styles.gameinfo}>Total: {Total}</Text>
+      <Text style={[styles.gameinfo,{fontSize: 15}]}>{checkBonus()?"You got the bonus!":"You are "+ bonusCount +" points away from bonus"}</Text>
         <View style={styles.flex}>{circlesVisual}</View>
     </View>
   )
