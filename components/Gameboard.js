@@ -110,6 +110,7 @@ const circlesValue = () => {
             if(round != 6){setSelected("3");}
             else{setSelected(0);}
             circles[i].counted = true;
+            setStatus('Throw dices.');
             setBonusCount(bonusCount - circles[i].multiplicator * i); // decrease bonus points
           }
           if(counter[i]){                         //if counter is higher then zero:
