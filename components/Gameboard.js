@@ -22,6 +22,7 @@ export default function Gameboard() {
   const [bonusAdded, setBonusAdded] = useState(false);
   const [buttonMes, setButtonMes] = useState("Throw dices");
   const [selected, setSelected] = useState(false);
+  const [wasSelOwerride, setWasSelOwerride] = useState(false);
 
 
   function throwDices() {   //Showtime
@@ -37,15 +38,16 @@ export default function Gameboard() {
 
   function checkBonus(){
     if(!bonusAdded){
-      if(Total > 62){setTotal(Total + 17); setBonusAdded(true)} //for example bonus points are +17 and lock forn no more bonus points
+      if(Total > 62){setTotal(Total + 17); setBonusAdded(true)} //for example bonus points are +17 and lock for no more bonus points
     }
   }
 
-  function wasSelected(){   //Also counting the sum and counting bonus points
+  function wasSelected(){
     let locked = 0;
     for(let i = 1;i <= 6; i++){
       if(circles[i].selected){locked = locked + 1} // end of round matching
     }
+    if(wasSelOwerride){return true} //in case the checkAvaSel() needs to end the game
     if(locked === round){return true}
     else{return false}
   }
@@ -107,10 +109,15 @@ const circlesValue = () => {
           if(!circles[i].counted)circles[i].multiplicator = counter[i];  //write multiplication
           if(!circles[i].counted){
             setTotal(Total + circles[i].multiplicator * i);
-            if(round != 6){setSelected("3");}
-            else{setSelected(0);}
-            circles[i].counted = true;
             setStatus('Throw dices.');
+            if(round != 6){setSelected("3");}
+            else{
+              setSelected(0);
+              setStatus('Game over. All points selected.');
+              setButtonMes('New game');  
+            }
+            circles[i].counted = true;
+            
             setBonusCount(bonusCount - circles[i].multiplicator * i); // decrease bonus points
           }
           if(counter[i]){                         //if counter is higher then zero:
@@ -135,10 +142,6 @@ function endGame(){
   let allselected = 0;
   for(let i = 1; i <= 6; i++){
     if(circles[i].selected) {allselected = allselected + 1}
-  }
-  if(allselected === 6) {
-    setStatus('Game over. All points selected.');
-    setButtonMes('New game');  
   }
 }
 
@@ -179,6 +182,23 @@ const getCircles = () =>{
 getCircles();
 //-----------
 
+function checkAvaSel(){ //can be case is not possible to select points if cube value is not available
+  let unselected = [];
+  let index = 0;
+  for(let i = 1; i <= 6 ; i++){
+    if(!circles[i].selected){
+      unselected[index] = i;
+      index = index + 1;
+    }
+  }
+  for(let j = 0; j < index; j++){
+    for(let i = 0; i < 5; i++){
+      if(cubes[i].value === unselected[j]){return true}
+    }
+}
+  return false;
+}
+
 useEffect(() => {
   checkWinner();
   if(nbrOfThrowsLeft === NBR_OF_THROWS){
@@ -192,6 +212,17 @@ useEffect(() => {
 useEffect(()=>{
   setSelected(false);
 },[round])
+
+useEffect(()=>{
+if(nbrOfThrowsLeft === 0){
+    if(!checkAvaSel()){
+      setStatus('Game over. Nothing else can be done.');
+      setButtonMes('New game');
+      setWasSelOwerride(true);
+      
+    }
+  }
+},[nbrOfThrowsLeft])
 
 function checkWinner() {
   if(nbrOfThrowsLeft === 0){
