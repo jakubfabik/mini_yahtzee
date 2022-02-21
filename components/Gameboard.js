@@ -5,12 +5,16 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 let cubes = [{},{},{},{},{}]; //important for constructor at getDices
 let circles = [{},{},{},{},{},{}];  //important for constructor at getCircles
-for (let i = 1; i <= 6; i++){
-  circles[i] = {name:'numeric-' + i + '-circle', color: "#0c95f7", multiplicator: 0, selected: false, counted: false};
+function generateCircles(){
+  for (let i = 1; i <= 6; i++){
+    circles[i] = {name:'numeric-' + i + '-circle', color: "#0c95f7", multiplicator: 0, selected: false, counted: false};
+  }
 }
+generateCircles();
 let locks = {circles: false, cubes: false};
 const NBR_OF_DICES = 5;
 const NBR_OF_THROWS = 3;
+const BONUS = 63;
 
 export default function Gameboard() {
   const [nbrOfThrowsLeft, setNbrOfThrowsLeft] = useState(NBR_OF_THROWS);
@@ -18,15 +22,16 @@ export default function Gameboard() {
   const [action, setAction] = useState(0);  //I am usin this state var for counting actions and also to rerender bacic js parts
   const [status, setStatus] = useState('');
   const [round, setRound] = useState(1);
-  const [bonusCount, setBonusCount] = useState(63);
+  const [bonusCount, setBonusCount] = useState(BONUS);
   const [bonusAdded, setBonusAdded] = useState(false);
   const [buttonMes, setButtonMes] = useState("Throw dices");
   const [selected, setSelected] = useState(false);
   const [wasSelOwerride, setWasSelOwerride] = useState(false);
+  const [reset, setReset] = useState(false);
 
 
   function throwDices() {   //Showtime
-    if(buttonMes === "New game"){NativeModules.DevSettings.reload();} //start new game
+    if(buttonMes === "New game"){setReset(true)} //start new game
     generateDices();
     setNbrOfThrowsLeft(nbrOfThrowsLeft-1);
     setAction(action+1);
@@ -40,6 +45,13 @@ export default function Gameboard() {
     if(!bonusAdded){
       if(Total > 62){setTotal(Total + 17); setBonusAdded(true)} //for example bonus points are +17 and lock for no more bonus points
     }
+  }
+
+  const restart =() =>{
+    generateDices();
+    generateCircles();
+    setNbrOfThrowsLeft(NBR_OF_THROWS);setTotal(0);setAction(0);setStatus('Throw dices.');;setRound(1);setBonusCount(BONUS);setBonusAdded(false);
+    setButtonMes("Throw dices");setSelected(false);setWasSelOwerride(false);locks.circles=false;locks.cubes=false;setReset(false);
   }
 
   function wasSelected(){
@@ -214,12 +226,16 @@ useEffect(()=>{
 },[round])
 
 useEffect(()=>{
+  restart();
+  setReset(false);
+},[reset])
+
+useEffect(()=>{
 if(nbrOfThrowsLeft === 0){
     if(!checkAvaSel()){
       setStatus('Game over. Nothing else can be done.');
       setButtonMes('New game');
       setWasSelOwerride(true);
-      
     }
   }
 },[nbrOfThrowsLeft])
