@@ -2,23 +2,26 @@ import styles from '../style/style';
 import React, {useState, useEffect, useCallback} from 'react';
 import {Text, View, Pressable, NativeModules} from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { func } from 'prop-types';
 
-let cubes = [{},{},{},{},{}]; //important for constructor at getDices
-let circles = [{},{},{},{},{},{}];  //important for constructor at getCircles
+let cubes = [{},{},{},{},{}]; 
+let circles = [{},{},{},{},{},{}]; 
 function generateCircles(){
   for (let i = 1; i <= 6; i++){
     circles[i] = {name:'numeric-' + i + '-circle', color: "#0c95f7", multiplicator: 0, selected: false, counted: false};
   }
 }
+
 generateCircles();
 let locks = {circles: false, cubes: false};
 const NBR_OF_DICES = 5;
 const NBR_OF_THROWS = 3;
 const BONUS = 63;
 
-export default function Gameboard() {
+export default function Gameboard({alias,saveScore}) {
   const [nbrOfThrowsLeft, setNbrOfThrowsLeft] = useState(NBR_OF_THROWS);
-  const [Total, setTotal] = useState(0);
+  const [total, setTotal] = useState(0);
   const [action, setAction] = useState(0);  //I am usin this state var for counting actions and also to rerender bacic js parts
   const [status, setStatus] = useState('');
   const [round, setRound] = useState(1);
@@ -28,7 +31,7 @@ export default function Gameboard() {
   const [selected, setSelected] = useState(false);
   const [wasSelOwerride, setWasSelOwerride] = useState(false);
   const [reset, setReset] = useState(false);
-
+ 
 
   function throwDices() {   //Showtime
     if(buttonMes === "New game"){setReset(true)} //start new game
@@ -40,19 +43,34 @@ export default function Gameboard() {
       setRound(round + 1);
     }
   }
-
   function checkBonus(){
     if(!bonusAdded){
-      if(Total > 62){setTotal(Total + 17); setBonusAdded(true)} //for example bonus points are +17 and lock for no more bonus points
+      if(total > 62){setTotal(total + 17); setBonusAdded(true)} //for example bonus points are +17 and lock for no more bonus points
     }
   }
+  
 
+  
   const restart =() =>{
     generateDices();
     generateCircles();
     setNbrOfThrowsLeft(NBR_OF_THROWS);setTotal(0);setAction(0);setStatus('Throw dices.');;setRound(1);setBonusCount(BONUS);setBonusAdded(false);
     setButtonMes("Throw dices");setSelected(false);setWasSelOwerride(false);locks.circles=false;locks.cubes=false;setReset(false);
+    if(total>0){
+      var mydate = new Date();
+      var month = (mydate.getMonth().toString().length < 2 ? "0"+(mydate.getMonth()+1).toString() :mydate.getMonth()+1);
+      var date = (mydate.getDate().toString().length < 2 ? "0"+mydate.getDate().toString() :mydate.getDate());
+      var minutes = (mydate.getMinutes().toString().length < 2 ? "0"+mydate.getMinutes().toString() :mydate.getMinutes());
+      var hours = (mydate.getHours().toString().length < 2 ? "0"+mydate.getHours().toString() :mydate.getHours());
+      saveScore({
+        name: alias,score:total, 
+        date: date+'.'+ (month), 
+        time: hours +':'+minutes}); 
+
+    }
   }
+
+
 
   function wasSelected(){
     let locked = 0;
@@ -120,7 +138,7 @@ const circlesValue = () => {
         if(circles[i].selected){
           if(!circles[i].counted)circles[i].multiplicator = counter[i];  //write multiplication
           if(!circles[i].counted){
-            setTotal(Total + circles[i].multiplicator * i);
+            setTotal(total + circles[i].multiplicator * i);
             setStatus('Throw dices.');
             if(round != 6){setSelected("3");}
             else{
@@ -258,7 +276,7 @@ function checkWinner() {
         onPress={() => ((nbrOfThrowsLeft === 0) && (!wasSelected()))?setStatus("Select your points before next throw"):throwDices()}>
           <Text style={styles.buttonText}>{buttonMes}</Text>
       </Pressable>
-      <Text style={styles.gameinfo}>Total: {Total}</Text>
+      <Text style={styles.gameinfo}>Total: {total}</Text>
       <Text style={[styles.gameinfo,{fontSize: 15}]}>{bonusAdded?"You got the bonus!":"You are "+ bonusCount +" points away from bonus"}</Text>
         <View style={styles.flex}>{circlesVisual}</View>
     </View>

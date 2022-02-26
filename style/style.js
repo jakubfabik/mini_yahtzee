@@ -12,9 +12,11 @@ export default StyleSheet.create({
     flexDirection: 'row',
   },
   footer: {
-    marginTop: 20,
     backgroundColor: 'indianred',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    width: "100%",
+    bottom: 0,
+    position: 'absolute',
   },
   title: {
     color: '#fff',
@@ -65,5 +67,17 @@ export default StyleSheet.create({
     color:"#035087",
     fontWeight: "bold",
     fontSize: 20
+  },
+  playerName:{
+    marginTop: "5%",
+    color: 'black',
+    fontWeight: '600',
+    fontStyle: 'italic',
+    fontSize: 15,
+    textAlign: 'center',
+  },
+  center:{
+    fontSize: 15,
+    textAlign: 'center',
   }
 });
