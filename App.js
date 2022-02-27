@@ -1,11 +1,11 @@
-import { StatusBar } from 'expo-status-bar';
 import { Text, TextInput, View} from 'react-native';
-import { useState,useEffect } from 'react';
+import { useState, useEffect} from 'react';
 import styles from './style/style';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Gameboard from './components/Gameboard';
-import { Col, Grid, Row } from "react-native-easy-grid";
+import { Col, Grid } from "react-native-easy-grid";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 export default function App() {
@@ -14,8 +14,61 @@ export default function App() {
   const [score,setScore] = useState([]);
   const [rendScore, setRendScore] = useState([]);
 
-  const saveScore = (data) =>{
+  const getData = async () => {
+    let temparr = [];
+    try {
+      const jsonValue = await AsyncStorage.getItem('@storage_Key')
+      if(jsonValue != null){
+        temparr = (JSON.parse(jsonValue));
+        //console.log(temparr);
+        setScore(temparr);
 
+      }
+      else {null;}
+    } catch(e) {
+      // error reading value
+    }
+  }
+  //console.log(score);
+  const storeData = async () => {
+    let tempScore = [];
+    for(let i = 0; i < score.length; i++){
+      tempScore.push(score[i]);
+    }
+    try {
+      const jsonValue = JSON.stringify(tempScore)
+      await AsyncStorage.setItem('@storage_Key', jsonValue)
+    } catch (e) {
+      // saving error
+    }
+  }
+
+  const clearAll = async () => {
+    try {
+      await AsyncStorage.clear()
+    } catch(e) {
+      // clear error
+    }
+  
+    console.log('Done.')
+  }
+
+  useEffect(()=>{
+    getData();
+    clearAll();
+    //console.log(saveScore);
+  },[])
+
+  useEffect(()=>{
+
+    storeData();
+  },[rendScore])
+
+  useEffect(()=>{
+    getScore();
+  },[play])
+
+  const saveScore = (data) =>{
     let tempData = score;
     if(tempData.length < 3){tempData.push(data);}
     else(checkAndPush(data));

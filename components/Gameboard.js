@@ -2,8 +2,6 @@ import styles from '../style/style';
 import React, {useState, useEffect, useCallback} from 'react';
 import {Text, View, Pressable, NativeModules} from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { func } from 'prop-types';
 
 let cubes = [{},{},{},{},{}]; 
 let circles = [{},{},{},{},{},{}]; 
