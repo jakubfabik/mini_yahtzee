@@ -135,11 +135,11 @@ export default function App() {
     for (let i = 0; i < len; i++) {
         rendArr.push(
                 <View key={i}>
-                  <Grid style={[{marginLeft:"-1%",flex:0,overflow: "hidden",borderRadius: 20,marginVertical: 5},setColor(i,len)]}>
-                    <Col><Text style={[{marginLeft:"30%"}]}>{score[i].score}</Text></Col>
-                    <Col><Text style={[{marginLeft:"18%"}]}>{score[i].date}</Text></Col>
-                    <Col><Text style={[{marginLeft:"20%"}]}>{score[i].time}</Text></Col>
-                    <Col><Text style={[{marginLeft:"20%"}]}>{score[i].name}</Text></Col>
+                  <Grid style={[{marginLeft:"2%",flex:0,overflow: "hidden",borderRadius: 20,marginVertical: 5},setColor(i,len)]}>
+                    <Col><Text style={[{marginLeft:"33%"}]}>{score[i].score}</Text></Col>
+                    <Col><Text style={[{marginLeft:"27%"}]}>{score[i].date}</Text></Col>
+                    <Col><Text style={[{marginLeft:"30%"}]}>{score[i].time}</Text></Col>
+                    <Col><Text style={[{marginLeft:"37%"}]}>{score[i].name}</Text></Col>
                   </Grid>
                   </View>
         )
@@ -150,7 +150,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Header />
+      <Header/>
       {
       play?
       <Gameboard alias={name} saveScore={saveScore} />
@@ -175,10 +175,10 @@ export default function App() {
       <Text style={styles.center}>Best scores:</Text>
       <View style={[{marginTop:10,marginHorizontal:35,}]}>
       <Grid style={[{marginBottom:20,flex:0}]}>
-        <Col><Text style={[{marginLeft:"18%"}]}>score</Text></Col>
-        <Col><Text style={[{marginLeft:"18%"}]}>date</Text></Col>
-        <Col><Text style={[{marginLeft:"18%"}]}>time</Text></Col>
-        <Col><Text style={[{marginLeft:"18%"}]}>name</Text></Col>
+        <Col><Text style={[{marginLeft:"35%"}]}>score</Text></Col>
+        <Col><Text style={[{marginLeft:"35%"}]}>date</Text></Col>
+        <Col><Text style={[{marginLeft:"35%"}]}>time</Text></Col>
+        <Col><Text style={[{marginLeft:"35%"}]}>name</Text></Col>
       </Grid>
       {rendScore}
       </View>
