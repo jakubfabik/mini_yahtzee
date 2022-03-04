@@ -29,10 +29,11 @@ export default function Gameboard({alias,saveScore}) {
   const [selected, setSelected] = useState(false);
   const [wasSelOwerride, setWasSelOwerride] = useState(false);
   const [reset, setReset] = useState(false);
-  const [lastSelPoint, setLastSelPoint] = useState("");
+  const [hideCubes, setHideCubes] = useState({opacity: 100});
  
 
   function throwDices() {   //Showtime
+    setHideCubes({opacity:100});
     if(buttonMes === "New game"){setReset(true)} //start new game
     generateDices();
     setNbrOfThrowsLeft(nbrOfThrowsLeft-1);
@@ -51,7 +52,7 @@ export default function Gameboard({alias,saveScore}) {
 
   
   const restart =() =>{
-    //generateDices();
+    setHideCubes({opacity:0});
     generateCircles();
     setNbrOfThrowsLeft(NBR_OF_THROWS);setTotal(0);setAction(0);setStatus('Throw dices.');;setRound(1);setBonusCount(BONUS);setBonusAdded(false);
     setButtonMes("Throw dices");setSelected(false);setWasSelOwerride(false);locks.circles=false;locks.cubes=false;setReset(false);
@@ -283,7 +284,7 @@ function checkWinner() {
 
   return(
     <View style={styles.gameboard}>
-      <View style={styles.flex}>{cubesVisual}</View>
+      <View style={[styles.flex,[hideCubes]]}>{cubesVisual}</View>
       <Text style={styles.gameinfo}>Throws left: {(selected)?selected:nbrOfThrowsLeft}</Text>
       <Text style={styles.gameinfo}>{status}</Text>
       <Pressable style={styles.button}
