@@ -90,6 +90,10 @@ export default function Gameboard({alias,saveScore}) {
   }
 
   const lock = (i) => {
+    if(nbrOfThrowsLeft === 0){
+      setStatus("You have to throw dices first");
+      if(selected){return};
+    }
     if(cubes[i].lock){
       cubes[i].lock = false;
       cubes[i].color = "#0c95f7";
@@ -98,6 +102,7 @@ export default function Gameboard({alias,saveScore}) {
       cubes[i].lock = true;
       cubes[i].color = "#54000d";
     }
+    
     setAction(action+1);
   }
 
@@ -177,10 +182,13 @@ function lockCircle(i){
   for(let j= 0; j < NBR_OF_DICES; j++){
     if(cubes[j].value === i){
       if(roundCheck() && nbrOfThrowsLeft === 0){
-        circles[i].selected = true
+        circles[i].selected = true;
+        for(let x = 0; x < NBR_OF_DICES; x++){
+          cubes[x].lock = true;
+          lock(x);
+        }
         endGame();
         setAction(action+1);
-        return null
       }
     }
     else{
