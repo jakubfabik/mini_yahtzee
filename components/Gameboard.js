@@ -183,6 +183,9 @@ function lockCircle(i){
         return null
       }
     }
+    else{
+      if(nbrOfThrowsLeft > 0){setStatus("Throw "+ nbrOfThrowsLeft+" times before setting points");}
+    }
   }
 }
 
