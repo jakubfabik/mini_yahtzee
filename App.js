@@ -159,7 +159,7 @@ export default function App() {
       <Text style={styles.gameinfo}>Weclome to dice game</Text>
       <Text style={styles.gameinfo}>Enter your  5 character nick name</Text>
       <TextInput
-      style={[styles.gameinfo, {color:"indianred",paddingBottom:"110%",}]}
+      style={[styles.gameinfo, {color:"indianred"}]}
       returnKeyType="next"
       placeholder='Your name'
       autoCapitalize="words"
