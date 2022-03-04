@@ -29,6 +29,7 @@ export default function Gameboard({alias,saveScore}) {
   const [selected, setSelected] = useState(false);
   const [wasSelOwerride, setWasSelOwerride] = useState(false);
   const [reset, setReset] = useState(false);
+  const [lastSelPoint, setLastSelPoint] = useState("");
  
 
   function throwDices() {   //Showtime
@@ -179,10 +180,12 @@ function endGame(){
 }
 
 function lockCircle(i){
+  if(selected){setStatus("You already selected points for " + lastSelPoint);}
   for(let j= 0; j < NBR_OF_DICES; j++){
     if(cubes[j].value === i){
       if(roundCheck() && nbrOfThrowsLeft === 0){
         circles[i].selected = true;
+        setLastSelPoint(i);
         for(let x = 0; x < NBR_OF_DICES; x++){
           cubes[x].lock = true;
           lock(x);
